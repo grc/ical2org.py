@@ -48,12 +48,14 @@ def recurring_event_years(event_start, event_end, start_utc, end_utc):
             result.append( (event_aux, event_aux.tzinfo.normalize(event_aux + event_duration), 1) )
     return result
 
-def recurring_event_days(event_start, event_end, delta_str, start_utc, end_utc):
+
+
+def recurring_event_days(event_start, event_end, delta_str, interval, start_utc, end_utc):
     result = []
     if delta_str not in REC_DELTAS:
         return []
     event_duration = event_end - event_start
-    delta_days = REC_DELTAS[delta_str]
+    delta_days = REC_DELTAS[delta_str] * interval
     delta = timedelta(days = delta_days)
     if event_start < start_utc:
         delta_ord = (start_utc.toordinal() - event_start.toordinal()) / delta_days
@@ -68,12 +70,12 @@ def recurring_event_days(event_start, event_end, delta_str, start_utc, end_utc):
         event_aux = add_delta_dst(event_aux, delta)
     return result
 
-def recurring_events(event_start, event_end, delta_str, start_utc, end_utc):
+def recurring_events(event_start, event_end, delta_str, interval, start_utc, end_utc):
     # event_start, event_end specified using its own timezone
     # start_utc, end_utc specified using UTC
     if delta_str == 'YEARLY':
         return recurring_event_years(event_start, event_end, start_utc, end_utc)
-    return recurring_event_days(event_start, event_end, delta_str, start_utc, end_utc)
+    return recurring_event_days(event_start, event_end, delta_str, interval, start_utc, end_utc)
 
 def eventsBetween(comp, start_utc, end_utc):
     '''Check whether VEVENT component lies between start and end, and, if
@@ -89,7 +91,9 @@ def eventsBetween(comp, start_utc, end_utc):
             event_until = end_utc
         if event_until < start_utc: return []
         event_until = max(event_until, end_utc)
-        return recurring_events(event_start, event_end, comp['RRULE']['FREQ'][0], start_utc, event_until)
+        # GRC: Modified to pass recurrence interval through, use 1 if not present.
+        interval = comp['RRULE']['INTERVAL'][0] if ('INTERVAL' in comp['RRULE']) else 1
+        return recurring_events(event_start, event_end, comp['RRULE']['FREQ'][0], interval, start_utc, event_until)
     # Single event
     if event_start > end_utc: return []
     if event_end < start_utc: return []
