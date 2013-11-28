@@ -6,13 +6,13 @@ from icalendar import Calendar
 from pytz import timezone, utc
 
 # Change here your local timezone
-LOCAL_TZ = timezone("Europe/Paris")
-# Window lenght in days (left & right from current time). Has to be possitive.
+LOCAL_TZ = timezone("Europe/London")
+# Window length in days (left & right from current time). Has to be possitive.
 WINDOW = 90
 # leave empty if you don't want to attach any tag to recurring events
-RECUR_TAG = ":RECURRING:"
+RECUR_TAG = ":recurring:"
 
-# Do not change anything below
+# do not change anything below
 
 REC_DELTAS = { 'WEEKLY' :  7,
                'DAILY'  :  1 }
